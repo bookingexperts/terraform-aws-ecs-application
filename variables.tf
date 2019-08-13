@@ -1,8 +1,8 @@
 # Application settings
 variable "name" { type = string }
 variable "env" { type = string }
-variable "subdomain" { type = string }
 variable "environment" { type = map(string) }
+variable "subdomain" { default = "" }
 variable "log_retention" { default = 30 }
 variable "legacy_container_names" { default = false }
 variable "storage_base_path" { default = "/mnt/efs" }
@@ -73,7 +73,8 @@ data "aws_region" "current" {}
 locals {
   name            = "${var.name}-${var.env}"
   tld             = substr(var.route53_zones.external.name, 0, length(var.route53_zones.external.name) - 1)
-  hostname        = "${var.subdomain}.${local.tld}"
+  subdomain       = coalesce(var.subdomain, var.env)
+  hostname        = "${local.subdomain}.${local.tld}"
   wildcard        = "*.${local.hostname}"
   cdn_host        = "cdn.${local.hostname}"
   container_names = var.legacy_container_names ? { web = "puma", worker = "sidekiq", console = "deploy" } : { web = "web", worker = "worker", console = "console" }

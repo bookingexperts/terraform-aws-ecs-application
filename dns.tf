@@ -1,7 +1,7 @@
 # Routing from external -> interal is managed manually on the proxies
 resource "aws_route53_record" "hostname" {
   zone_id = var.route53_zones.external.zone_id
-  name    = var.subdomain
+  name    = local.subdomain
   type    = "A"
 
   alias {
@@ -13,7 +13,7 @@ resource "aws_route53_record" "hostname" {
 
 resource "aws_route53_record" "wildcard" {
   zone_id = var.route53_zones.external.zone_id
-  name    = "*.${var.subdomain}"
+  name    = "*.${local.subdomain}"
   type    = "A"
 
   alias {
@@ -25,7 +25,7 @@ resource "aws_route53_record" "wildcard" {
 
 resource "aws_route53_record" "cdn" {
   zone_id = var.route53_zones.external.zone_id
-  name    = "cdn.${var.subdomain}"
+  name    = "cdn.${local.subdomain}"
   type    = "A"
 
   alias {
