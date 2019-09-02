@@ -140,19 +140,24 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   # Cache assets
-  ordered_cache_behavior {
-    path_pattern           = "/assets/*"
-    allowed_methods        = ["GET", "HEAD"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "app"
-    compress               = true
-    viewer_protocol_policy = "redirect-to-https"
+  dynamic "ordered_cache_behavior" {
+    for_each = ["/assets/*", "/packs/*"]
+    iterator = path
 
-    forwarded_values {
-      query_string = false
+    content {
+      path_pattern           = path.value
+      allowed_methods        = ["GET", "HEAD"]
+      cached_methods         = ["GET", "HEAD"]
+      target_origin_id       = "app"
+      compress               = true
+      viewer_protocol_policy = "redirect-to-https"
 
-      cookies {
-        forward = "none"
+      forwarded_values {
+        query_string = false
+
+        cookies {
+          forward = "none"
+        }
       }
     }
   }
