@@ -32,6 +32,10 @@ resource "aws_cloudfront_distribution" "cdn" {
   wait_for_deployment = false
   depends_on          = [aws_acm_certificate_validation.cdn, aws_acm_certificate.cdn]
 
+  tags = {
+    workload-type = var.workload_type
+  }
+
   enabled         = true
   is_ipv6_enabled = true
   comment         = "Managed by Terraform"

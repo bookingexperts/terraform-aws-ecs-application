@@ -6,7 +6,7 @@ variable "subdomain" { default = "" }
 variable "log_retention" { default = 30 }
 variable "legacy_container_names" { default = false }
 variable "storage_base_path" { default = "/mnt/efs" }
-
+variable "workload_type" { default = "testing" }
 # Task specific settings
 variable "web" {
   type = object({

@@ -20,6 +20,10 @@ resource "aws_s3_bucket" "media" {
     ]
 }
 EOF
+
+  tags = {
+    workload-type = var.workload_type
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "media" {

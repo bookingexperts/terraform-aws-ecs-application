@@ -42,10 +42,15 @@ resource "aws_db_instance" "db" {
   vpc_security_group_ids              = concat(local.rds.vpc_security_group_ids, [aws_security_group.rds.id])
   password                            = local.rds.password
   username                            = local.rds.username
+  allocated_storage                   = local.rds.allocated_storage
 
   lifecycle {
     create_before_destroy = true
     ignore_changes = ["snapshot_identifier"]
+  }
+
+  tags = {
+    workload-type = var.workload_type
   }
 }
 
@@ -75,6 +80,10 @@ resource "aws_security_group" "rds" {
 
   lifecycle {
     create_before_destroy = true
+  }
+
+  tags = {
+    workload-type = var.workload_type
   }
 }
 

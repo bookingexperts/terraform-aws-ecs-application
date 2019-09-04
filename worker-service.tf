@@ -8,6 +8,10 @@ resource "aws_ecs_task_definition" "worker" {
     host_path = "${var.storage_base_path}/${local.name}"
     name      = "storage"
   }
+
+  tags = {
+    workload-type = var.workload_type
+  }
 }
 
 resource "aws_ecs_service" "worker" {
@@ -33,6 +37,10 @@ resource "aws_ecs_service" "worker" {
     security_groups = [aws_security_group.default.id]
   }
 
+  tags = {
+    workload-type = var.workload_type
+  }
+
   depends_on = ["aws_security_group.default"]
 }
 
@@ -50,6 +58,10 @@ resource "aws_security_group" "default" {
 
   lifecycle {
     create_before_destroy = true
+  }
+
+  tags = {
+    workload-type = var.workload_type
   }
 }
 

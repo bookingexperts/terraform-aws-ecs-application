@@ -22,6 +22,10 @@ resource "aws_elasticache_replication_group" "redis" {
   parameter_group_name       = local.redis.parameter_group_name
   engine_version             = local.redis.engine_version
   automatic_failover_enabled = local.redis.nodes > 1
+
+  tags = {
+    workload-type = var.workload_type
+  }
 }
 
 resource "aws_security_group" "redis" {
@@ -45,5 +49,9 @@ resource "aws_security_group" "redis" {
 
   lifecycle {
     create_before_destroy = true
+  }
+
+  tags = {
+    workload-type = var.workload_type
   }
 }

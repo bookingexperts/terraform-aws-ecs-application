@@ -8,4 +8,8 @@ resource "aws_ecs_task_definition" "console" {
     host_path = "${var.storage_base_path}/${local.name}"
     name      = "storage"
   }
+
+  tags = {
+    workload-type = var.workload_type
+  }
 }

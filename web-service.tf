@@ -8,6 +8,10 @@ resource "aws_ecs_task_definition" "web" {
     host_path = "${var.storage_base_path}/${local.name}"
     name      = "storage"
   }
+
+  tags = {
+    workload-type = var.workload_type
+  }
 }
 
 resource "aws_ecs_service" "web" {
@@ -39,6 +43,10 @@ resource "aws_ecs_service" "web" {
     security_groups = [aws_security_group.web.id]
   }
 
+  tags = {
+    workload-type = var.workload_type
+  }
+
   depends_on = ["aws_security_group.web"]
 }
 
@@ -64,6 +72,10 @@ resource "aws_lb_target_group" "web" {
   lifecycle {
     create_before_destroy = true
   }
+
+  tags = {
+    workload-type = var.workload_type
+  }
 }
 
 resource "aws_security_group" "web" {
@@ -87,5 +99,9 @@ resource "aws_security_group" "web" {
 
   lifecycle {
     create_before_destroy = true
+  }
+
+  tags = {
+    workload-type = var.workload_type
   }
 }
