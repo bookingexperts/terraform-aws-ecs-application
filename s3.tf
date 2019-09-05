@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "media" {
-  bucket = local.name
-  acl    = "private"
+  bucket        = local.name
+  acl           = "private"
   force_destroy = true
 
   policy = <<EOF

@@ -43,10 +43,6 @@ resource "aws_ecs_service" "web" {
     security_groups = [aws_security_group.web.id]
   }
 
-  tags = {
-    workload-type = var.workload_type
-  }
-
   depends_on = ["aws_security_group.web"]
 }
 

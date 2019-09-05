@@ -51,7 +51,7 @@ resource "null_resource" "call-certbot" {
 
   provisioner "local-exec" {
     command = <<EOC
-      aws ecs run-task --cluster ${var.ecs_cluster.name} --task-definition certbot --started-by "Terraform" \
+      aws ecs run-task --region eu-central-1 --cluster ${var.ecs_cluster.name} --task-definition certbot --started-by "Terraform" \
       --overrides '${jsonencode(local.certbot.overrides)}' --network-configuration '${jsonencode(local.certbot.network_config)}'
 EOC
   }

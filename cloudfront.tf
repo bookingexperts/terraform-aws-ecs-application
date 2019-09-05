@@ -23,12 +23,12 @@ resource "aws_acm_certificate_validation" "cdn" {
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
-  provider                = "aws.cdn"
-  comment = "access-identity-${local.name}.s3.amazonaws.com"
+  provider = "aws.cdn"
+  comment  = "access-identity-${local.name}.s3.amazonaws.com"
 }
 
 resource "aws_cloudfront_distribution" "cdn" {
-  provider                = "aws.cdn"
+  provider            = "aws.cdn"
   wait_for_deployment = false
   depends_on          = [aws_acm_certificate_validation.cdn, aws_acm_certificate.cdn]
 

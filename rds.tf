@@ -39,14 +39,14 @@ resource "aws_db_instance" "db" {
   multi_az                            = local.rds.multi_az
   skip_final_snapshot                 = local.rds.skip_final_snapshot
   snapshot_identifier                 = coalesce(data.aws_db_snapshot.latest.0.id, local.rds.db_snapshot_identifier)
-  vpc_security_group_ids              = concat(local.rds.vpc_security_group_ids, [aws_security_group.rds.id])
+  vpc_security_group_ids              = concat(local.rds.vpc_security_group_ids, aws_security_group.rds.*.id)
   password                            = local.rds.password
   username                            = local.rds.username
   allocated_storage                   = local.rds.allocated_storage
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = ["snapshot_identifier"]
+    ignore_changes        = ["snapshot_identifier"]
   }
 
   tags = {
@@ -60,6 +60,7 @@ data "aws_db_instance" "db" {
 }
 
 resource "aws_security_group" "rds" {
+  count       = local.rds.db_instance_identifier == null ? 1 : 0
   name_prefix = "${local.name}-rds-"
   vpc_id      = var.vpc.id
 

@@ -37,10 +37,6 @@ resource "aws_ecs_service" "worker" {
     security_groups = [aws_security_group.default.id]
   }
 
-  tags = {
-    workload-type = var.workload_type
-  }
-
   depends_on = ["aws_security_group.default"]
 }
 
