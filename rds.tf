@@ -15,6 +15,7 @@ locals {
     vpc_security_group_ids              = ["sg-a10174cb"] # Bastion SG, task related groups are added
     username                            = ""
     password                            = ""
+    allocated_storage                   = 10
   }
   rds = merge(local.rds_defaults, var.rds)
 }
