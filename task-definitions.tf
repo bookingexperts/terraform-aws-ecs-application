@@ -33,7 +33,7 @@ locals {
   console_container_definition = merge(
     local.base_container_definition,
     {
-      name  = "deploy"
+      name  = local.container_names.console
       image = "${var.ecr_repository.repository_url}:${var.env}-next"
 
       logConfiguration = {
