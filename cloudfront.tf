@@ -1,3 +1,13 @@
+locals {
+  cloudfront_defaults = {
+    fallback_host =  null
+    private_media_paths = []
+    public_media_paths  = []
+    aliases             = []
+  }
+  cloudfront = merge(local.cloudfront_defaults, var.cloudfront)
+}
+
 resource "aws_acm_certificate" "cdn" {
   provider          = "aws.cdn"
   domain_name       = local.cdn_host
@@ -39,7 +49,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   enabled         = true
   is_ipv6_enabled = true
   comment         = "Managed by Terraform"
-  aliases         = [local.cdn_host]
+  aliases         = concat([local.cdn_host], local.cloudfront.aliases)
 
   viewer_certificate {
     acm_certificate_arn      = aws_acm_certificate.cdn.arn
@@ -59,15 +69,20 @@ resource "aws_cloudfront_distribution" "cdn" {
     }
   }
 
-  origin {
-    domain_name = var.cdn.fallback_host
-    origin_id   = "media-fallback"
+  dynamic "origin" {
+    for_each = compact([local.cloudfront.fallback_host])
+    iterator = host
 
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_ssl_protocols   = ["TLSv1.2"]
-      origin_protocol_policy = "https-only"
+    content {
+      domain_name = host.value
+      origin_id   = "media-fallback"
+
+      custom_origin_config {
+        http_port              = 80
+        https_port             = 443
+        origin_ssl_protocols   = ["TLSv1.2"]
+        origin_protocol_policy = "https-only"
+      }
     }
   }
 
@@ -80,25 +95,29 @@ resource "aws_cloudfront_distribution" "cdn" {
     }
   }
 
-  origin_group {
-    origin_id = "media-with-fallback"
+  dynamic "origin_group" {
+    for_each = compact([local.cloudfront.fallback_host])
 
-    failover_criteria {
-      status_codes = [403, 404]
-    }
+    content {
+      origin_id = "media-with-fallback"
 
-    member {
-      origin_id = "media"
-    }
+      failover_criteria {
+        status_codes = [403, 404]
+      }
 
-    member {
-      origin_id = "media-fallback"
+      member {
+        origin_id = "media"
+      }
+
+      member {
+        origin_id = "media-fallback"
+      }
     }
   }
 
   # Private media
   dynamic "ordered_cache_behavior" {
-    for_each = var.cdn.private_media_paths
+    for_each = local.cloudfront.private_media_paths
     iterator = path
 
     content {
@@ -122,14 +141,14 @@ resource "aws_cloudfront_distribution" "cdn" {
 
   # Public media
   dynamic "ordered_cache_behavior" {
-    for_each = var.cdn.public_media_paths
+    for_each = local.cloudfront.public_media_paths
     iterator = path
 
     content {
       path_pattern           = path.value
       allowed_methods        = ["GET", "HEAD"]
       cached_methods         = ["GET", "HEAD"]
-      target_origin_id       = "media-with-fallback"
+      target_origin_id       = local.cloudfront.fallback_host == null ? "media" : "media-with-fallback"
       compress               = true
       viewer_protocol_policy = "redirect-to-https"
 
