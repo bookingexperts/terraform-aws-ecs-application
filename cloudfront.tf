@@ -11,6 +11,7 @@ locals {
 resource "aws_acm_certificate" "cdn" {
   provider          = "aws.cdn"
   domain_name       = local.cdn_host
+  subject_alternative_names = local.cloudfront.aliases
   validation_method = "DNS"
 
   lifecycle {
@@ -19,17 +20,24 @@ resource "aws_acm_certificate" "cdn" {
 }
 
 resource "aws_route53_record" "cdn-validation" {
-  name    = aws_acm_certificate.cdn.domain_validation_options.0.resource_record_name
-  type    = aws_acm_certificate.cdn.domain_validation_options.0.resource_record_type
-  records = [aws_acm_certificate.cdn.domain_validation_options.0.resource_record_value]
+  count = length(aws_acm_certificate.cdn.domain_validation_options)
+
+  name    = aws_acm_certificate.cdn.domain_validation_options[count.index].resource_record_name
+  type    = aws_acm_certificate.cdn.domain_validation_options[count.index].resource_record_type
+  records = [aws_acm_certificate.cdn.domain_validation_options[count.index].resource_record_value]
   zone_id = var.route53_zones.external.zone_id
   ttl     = 60
+
+
+  lifecycle {
+    create_before_destroy = false
+  }
 }
 
 resource "aws_acm_certificate_validation" "cdn" {
   provider                = "aws.cdn"
   certificate_arn         = aws_acm_certificate.cdn.arn
-  validation_record_fqdns = [aws_route53_record.cdn-validation.fqdn]
+  validation_record_fqdns = aws_route53_record.cdn-validation.*.fqdn
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
