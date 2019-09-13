@@ -15,7 +15,7 @@ resource "aws_s3_bucket" "media" {
                 "AWS": "${aws_cloudfront_origin_access_identity.default.iam_arn}"
             },
             "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::${local.name}/*"
+            "Resource": "arn:aws:s3:::${local.bucket_name}/*"
         }
     ]
 }
