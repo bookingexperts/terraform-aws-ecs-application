@@ -6,7 +6,7 @@ locals {
       "HOST"             = aws_route53_record.hostname.fqdn
       "LOG_NAME"         = local.name
       "AWS_REGION"       = data.aws_region.current.name
-      "REDIS_URL"        = "redis://${aws_elasticache_replication_group.redis.primary_endpoint_address}:6379"
+      "REDIS_URL"        = "redis://${aws_route53_record.redis.fqdn}:6379"
       "S3_DIRECTORY"     = aws_s3_bucket.media.bucket
       "RDS_HOSTNAME"     = aws_route53_record.rds.fqdn
       "RDS_DB_NAME"      = data.aws_db_instance.db.db_name

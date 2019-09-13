@@ -8,8 +8,12 @@ locals {
   redis = merge(local.redis_defaults, var.redis)
 }
 
+resource "random_id" "redis" {
+  byte_length = 4
+}
+
 resource "aws_elasticache_replication_group" "redis" {
-  replication_group_id          = local.name
+  replication_group_id          = "${substr(local.name, 0, 13)}-${random_id.redis.id}"
   replication_group_description = "${local.name} cache cluster"
   engine                        = "redis"
   port                          = 6379
@@ -22,9 +26,15 @@ resource "aws_elasticache_replication_group" "redis" {
   parameter_group_name       = local.redis.parameter_group_name
   engine_version             = local.redis.engine_version
   automatic_failover_enabled = local.redis.nodes > 1
+  at_rest_encryption_enabled = true
+  transit_encryption_enabled = false # Not supported by hiredis driver
 
   tags = {
     workload-type = var.workload_type
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -54,4 +64,12 @@ resource "aws_security_group" "redis" {
   tags = {
     workload-type = var.workload_type
   }
+}
+
+resource "aws_route53_record" "redis" {
+  zone_id = var.route53_zones.internal.zone_id
+  name    = "cache.${local.name}.be.internal"
+  type    = "CNAME"
+  ttl     = 60
+  records = [aws_elasticache_replication_group.redis.primary_endpoint_address]
 }
