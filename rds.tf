@@ -18,6 +18,7 @@ locals {
     allocated_storage                   = null
   }
   rds = merge(local.rds_defaults, var.rds)
+  rds_cname = "db.${local.name}.be.internal"
 }
 
 # Optionally create a new DB based on the settings provided in var.rds
@@ -91,12 +92,8 @@ resource "aws_security_group" "rds" {
 
 resource "aws_route53_record" "rds" {
   zone_id = var.route53_zones.internal.zone_id
-  name    = "db.${local.name}.be.internal"
-  type    = "A"
-
-  alias {
-    evaluate_target_health = true
-    name                   = data.aws_db_instance.db.address
-    zone_id                = data.aws_db_instance.db.hosted_zone_id
-  }
+  name    = local.rds_cname
+  type    = "CNAME"
+  records = [data.aws_db_instance.db.address]
+  ttl     = 60
 }

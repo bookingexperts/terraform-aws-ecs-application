@@ -8,7 +8,7 @@ locals {
       "AWS_REGION"       = data.aws_region.current.name
       "REDIS_URL"        = "redis://${aws_route53_record.redis.fqdn}:6379"
       "S3_DIRECTORY"     = aws_s3_bucket.media.bucket
-      "RDS_HOSTNAME"     = aws_route53_record.rds.fqdn
+      "RDS_HOSTNAME"     = local.rds_cname
       "RDS_DB_NAME"      = data.aws_db_instance.db.db_name
       "RDS_PORT"         = tostring(data.aws_db_instance.db.port)
       "RDS_USERNAME"     = data.aws_db_instance.db.master_username
