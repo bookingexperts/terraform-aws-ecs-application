@@ -1,8 +1,8 @@
 locals {
   env_vars = merge(
     {
-      "ASSET_HOST"       = aws_route53_record.cdn.fqdn
-      "MEDIA_ASSET_HOST" = aws_route53_record.cdn.fqdn
+      "ASSET_HOST"       = local.cloudfront_host
+      "MEDIA_ASSET_HOST" = local.cloudfront_host
       "HOST"             = aws_route53_record.hostname.fqdn
       "LOG_NAME"         = local.name
       "AWS_REGION"       = data.aws_region.current.name
