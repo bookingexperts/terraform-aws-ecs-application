@@ -6,7 +6,7 @@ locals {
     aliases             = []
   }
   cloudfront = merge(local.cloudfront_defaults, var.cloudfront)
-  cloudfront_host = "cdn.${local.subdomain}.${var.route53_zones.external.name}"
+  cloudfront_host = regex("^(.+?)[.]?$", "cdn.${local.subdomain}.${var.route53_zones.external.name}")[0]
 }
 
 resource "aws_acm_certificate" "cdn" {

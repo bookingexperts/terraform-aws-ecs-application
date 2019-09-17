@@ -9,11 +9,11 @@ locals {
 }
 
 resource "random_id" "redis" {
-  byte_length = 3
+  byte_length = 4
 }
 
 resource "aws_elasticache_replication_group" "redis" {
-  replication_group_id          = "${regex("^.{0,12}[^-]?", local.name)}-${random_id.redis.hex}"
+  replication_group_id          = "${regex("^.{0,12}[^-]?", local.name)}-${regex("^[^-]?.*", random_id.redis.id)}"
   replication_group_description = "${local.name} cache cluster"
   engine                        = "redis"
   port                          = 6379
