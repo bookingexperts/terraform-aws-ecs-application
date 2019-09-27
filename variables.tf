@@ -7,10 +7,6 @@ variable "log_retention" { default = 30 }
 variable "legacy_container_names" { default = false }
 variable "storage_base_path" { default = "/mnt/efs" }
 variable "workload_type" { default = "testing" }
-variable "bucket_name" {
-  default = null
-  type = string
-}
 
 # Task specific settings
 variable "web" {
@@ -39,6 +35,10 @@ variable "worker" {
 }
 
 variable "cloudfront" {
+  default = {}
+}
+
+variable "s3" {
   default = {}
 }
 
@@ -73,7 +73,6 @@ variable "load_balancers" {
 data "aws_region" "current" {}
 locals {
   name            = "${var.name}-${var.env}"
-  bucket_name     = coalesce(var.bucket_name, local.name)
   tld             = substr(var.route53_zones.external.name, 0, length(var.route53_zones.external.name) - 1)
   subdomain       = coalesce(var.subdomain, var.env)
   hostname        = "${local.subdomain}.${local.tld}"

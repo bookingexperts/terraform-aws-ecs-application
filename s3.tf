@@ -1,5 +1,13 @@
+locals {
+  s3_defaults = {
+    bucket_name = local.name
+    temporary_uploads = null
+  }
+  s3 = merge(local.s3_defaults, var.s3)
+}
+
 resource "aws_s3_bucket" "media" {
-  bucket        = local.bucket_name
+  bucket        = local.s3.bucket_name
   acl           = "private"
   force_destroy = true
 
@@ -15,11 +23,33 @@ resource "aws_s3_bucket" "media" {
                 "AWS": "${aws_cloudfront_origin_access_identity.default.iam_arn}"
             },
             "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::${local.bucket_name}/*"
+            "Resource": "arn:aws:s3:::${local.s3.bucket_name}/*"
         }
     ]
 }
 EOF
+
+  dynamic "cors_rule" {
+    for_each = compact([local.s3.temporary_uploads])
+    content {
+      allowed_headers = ["*"]
+      allowed_methods = ["PUT", "GET", "HEAD"]
+      allowed_origins = ["https://${local.hostname}"]
+      expose_headers  = ["ETag"]
+    }
+  }
+
+  dynamic "lifecycle_rule" {
+    for_each = compact([local.s3.temporary_uploads])
+    content {
+      prefix = lifecycle_rule.value
+      enabled = true
+      abort_incomplete_multipart_upload_days = 1
+      expiration {
+        days = 1
+      }
+    }
+  }
 
   tags = {
     workload-type = var.workload_type

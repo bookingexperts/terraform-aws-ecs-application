@@ -39,7 +39,7 @@ resource "aws_iam_policy" "s3" {
         {
           "Effect": "Allow",
           "Action": ["s3:ListBucket"],
-          "Resource": ["arn:aws:s3:::${local.bucket_name}"]
+          "Resource": ["arn:aws:s3:::${local.s3.bucket_name}"]
         },
         {
           "Effect": "Allow",
@@ -49,7 +49,7 @@ resource "aws_iam_policy" "s3" {
             "s3:DeleteObject",
             "s3:PutObjectAcl"
           ],
-          "Resource": ["arn:aws:s3:::${local.bucket_name}/*"]
+          "Resource": ["arn:aws:s3:::${local.s3.bucket_name}/*"]
         }
     ]
 }
