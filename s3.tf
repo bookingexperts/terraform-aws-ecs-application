@@ -1,7 +1,8 @@
 locals {
   s3_defaults = {
     bucket_name = local.name
-    temporary_uploads = null
+    allow_uploads = false
+    auto_expire_paths = []
   }
   s3 = merge(local.s3_defaults, var.s3)
 }
@@ -30,7 +31,7 @@ resource "aws_s3_bucket" "media" {
 EOF
 
   dynamic "cors_rule" {
-    for_each = compact([local.s3.temporary_uploads])
+    for_each = local.s3.allow_uploads ? [true] : []
     content {
       allowed_headers = ["*"]
       allowed_methods = ["PUT", "GET", "HEAD"]
@@ -40,9 +41,9 @@ EOF
   }
 
   dynamic "lifecycle_rule" {
-    for_each = compact([local.s3.temporary_uploads])
+    for_each = compact(local.s3.auto_expire_paths)
     content {
-      prefix = lifecycle_rule.value
+      prefix = replace(lifecycle_rule.value, "/^//", "")
       enabled = true
       abort_incomplete_multipart_upload_days = 1
       expiration {
