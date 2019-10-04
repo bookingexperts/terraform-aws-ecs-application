@@ -1,6 +1,7 @@
 locals {
   rds_defaults = {
     db_instance_identifier              = null
+    db_instance_prefix                  = null
     source_db_instance_identifier       = null
     db_snapshot_identifier              = null
     identifier_prefix                   = "${local.name}-"
@@ -18,7 +19,17 @@ locals {
     allocated_storage                   = null
   }
   rds = merge(local.rds_defaults, var.rds)
+  rds_create_db_instance = coalesce(local.rds.db_instance_prefix, local.rds.db_instance_identifier) == null
   rds_cname = "db.${local.name}.be.internal"
+}
+
+# Get staging db name based on prefix, it's suffix changes daily
+data "external" "db-instance-identifier" {
+  count = local.rds.db_instance_prefix != null ? 1 : 0
+  program = ["${path.module}/bin/rds-instance"]
+  query = {
+    "prefix" = local.rds.db_instance_prefix
+  }
 }
 
 # Optionally create a new DB based on the settings provided in var.rds
@@ -29,7 +40,7 @@ data "aws_db_snapshot" "latest" {
 }
 
 resource "aws_db_instance" "db" {
-  count = local.rds.db_instance_identifier == null ? 1 : 0
+  count = local.rds_create_db_instance ? 1 : 0
 
   backup_retention_period             = local.rds.backup_retention_period
   db_subnet_group_name                = local.rds.db_subnet_group_name
@@ -58,11 +69,15 @@ resource "aws_db_instance" "db" {
 
 # Use _data_ for consistent behaviour
 data "aws_db_instance" "db" {
-  db_instance_identifier = local.rds.db_instance_identifier == null ? aws_db_instance.db.0.identifier : local.rds.db_instance_identifier
+  db_instance_identifier = coalesce(
+    local.rds.db_instance_identifier,
+    data.external.db-instance-identifier.0.result["name"],
+    aws_db_instance.db.0.identifier
+  )
 }
 
 resource "aws_security_group" "rds" {
-  count       = local.rds.db_instance_identifier == null ? 1 : 0
+  count       = local.rds_create_db_instance ? 1 : 0
   name_prefix = "${local.name}-rds-"
   vpc_id      = var.vpc.id
 
