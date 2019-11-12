@@ -20,9 +20,6 @@ locals {
   base_container_definition = {
     image             = "${var.ecr_repository.repository_url}:${var.env}"
     essential         = true
-    cpu               = var.worker.cpu
-    memory            = var.worker.memory
-    memoryReservation = var.worker.memory / 2
     mountPoints = [{
       containerPath = "/mnt"
       sourceVolume  = "storage"
@@ -35,6 +32,9 @@ locals {
     {
       name  = local.container_names.console
       image = "${var.ecr_repository.repository_url}:${var.env}-next"
+      cpu               = var.worker.cpu / 4
+      memory            = var.worker.memory
+      memoryReservation = var.worker.memory / 4
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -71,6 +71,10 @@ locals {
     {
       name    = local.container_names.worker
       command = ["sidekiq", "-C", "config/sidekiq.yml"]
+      cpu               = var.worker.cpu
+      memory            = var.worker.memory
+      memoryReservation = var.worker.memory / 2
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {

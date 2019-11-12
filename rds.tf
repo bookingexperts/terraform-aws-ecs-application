@@ -19,7 +19,7 @@ locals {
     allocated_storage                   = null
   }
   rds = merge(local.rds_defaults, var.rds)
-  rds_create_db_instance = coalesce(local.rds.db_instance_prefix, local.rds.db_instance_identifier) == null
+  rds_create_db_instance = coalesce(local.rds.db_instance_prefix, local.rds.db_instance_identifier, true)
   rds_cname = "db.${local.name}.be.internal"
 }
 
