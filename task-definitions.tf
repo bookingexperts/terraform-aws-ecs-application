@@ -33,7 +33,6 @@ locals {
       name  = local.container_names.console
       image = "${var.ecr_repository.repository_url}:${var.env}-next"
       cpu               = var.worker.cpu / 4
-      memory            = var.worker.memory
       memoryReservation = var.worker.memory / 4
 
       logConfiguration = {
