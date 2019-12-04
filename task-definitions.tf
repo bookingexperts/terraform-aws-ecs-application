@@ -3,7 +3,7 @@ locals {
     {
       "ASSET_HOST"       = local.cloudfront_host
       "MEDIA_ASSET_HOST" = local.cloudfront_host
-      "HOST"             = aws_route53_record.hostname.fqdn
+      "HOST"             = local.hostname
       "LOG_NAME"         = local.name
       "AWS_REGION"       = data.aws_region.current.name
       "REDIS_URL"        = "redis://${aws_route53_record.redis.fqdn}:6379"
