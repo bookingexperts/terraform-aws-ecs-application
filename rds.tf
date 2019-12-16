@@ -70,7 +70,7 @@ resource "aws_db_instance" "db" {
 data "aws_db_instance" "db" {
   db_instance_identifier = coalesce(
     local.rds.db_instance_identifier,
-    aws_db_instance.db.0.identifier,
+    length(aws_db_instance.db) > 0  ? aws_db_instance.db.0.identifier : null,
     data.external.db-instance-identifier.result["name"]
   )
 }
