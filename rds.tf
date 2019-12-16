@@ -18,14 +18,13 @@ locals {
     password                            = ""
     allocated_storage                   = null
   }
-  rds = merge(local.rds_defaults, var.rds)
+  rds                    = merge(local.rds_defaults, var.rds)
   rds_create_db_instance = length(coalesce(local.rds.db_instance_prefix, local.rds.db_instance_identifier, "x")) < 2
-  rds_cname = "db.${local.name}.be.internal"
+  rds_cname              = "db.${local.name}.be.internal"
 }
 
-# Get staging db name based on prefix, it's suffix changes daily
+# Get staging db name based on prefix, its suffix changes daily
 data "external" "db-instance-identifier" {
-  count = local.rds.db_instance_prefix != null ? 1 : 0
   program = ["${path.module}/bin/rds-instance"]
   query = {
     "prefix" = local.rds.db_instance_prefix
@@ -71,8 +70,8 @@ resource "aws_db_instance" "db" {
 data "aws_db_instance" "db" {
   db_instance_identifier = coalesce(
     local.rds.db_instance_identifier,
-    data.external.db-instance-identifier.0.result["name"],
-    aws_db_instance.db.0.identifier
+    aws_db_instance.db.0.identifier,
+    data.external.db-instance-identifier.result["name"]
   )
 }
 

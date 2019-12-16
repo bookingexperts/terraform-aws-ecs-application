@@ -1,7 +1,7 @@
 locals {
   s3_defaults = {
-    bucket_name = local.name
-    allow_uploads = false
+    bucket_name       = local.name
+    allow_uploads     = false
     auto_expire_paths = []
   }
   s3 = merge(local.s3_defaults, var.s3)
@@ -43,8 +43,8 @@ EOF
   dynamic "lifecycle_rule" {
     for_each = compact(local.s3.auto_expire_paths)
     content {
-      prefix = replace(lifecycle_rule.value, "/^//", "")
-      enabled = true
+      prefix                                 = replace(lifecycle_rule.value, "/^//", "")
+      enabled                                = true
       abort_incomplete_multipart_upload_days = 1
       expiration {
         days = 1

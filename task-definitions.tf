@@ -18,8 +18,8 @@ locals {
   )
 
   base_container_definition = {
-    image             = "${var.ecr_repository.repository_url}:${var.env}"
-    essential         = true
+    image     = "${var.ecr_repository.repository_url}:${var.env}"
+    essential = true
     mountPoints = [{
       containerPath = "/mnt"
       sourceVolume  = "storage"
@@ -30,8 +30,8 @@ locals {
   console_container_definition = merge(
     local.base_container_definition,
     {
-      name  = local.container_names.console
-      image = "${var.ecr_repository.repository_url}:${var.env}-next"
+      name              = local.container_names.console
+      image             = "${var.ecr_repository.repository_url}:${var.env}-next"
       cpu               = var.worker.cpu / 4
       memoryReservation = var.worker.memory / 4
 
@@ -68,8 +68,8 @@ locals {
   worker_container_definition = merge(
     local.base_container_definition,
     {
-      name    = local.container_names.worker
-      command = ["sidekiq", "-C", "config/sidekiq.yml"]
+      name              = local.container_names.worker
+      command           = ["sidekiq", "-C", "config/sidekiq.yml"]
       cpu               = var.worker.cpu
       memory            = var.worker.memory
       memoryReservation = var.worker.memory / 2

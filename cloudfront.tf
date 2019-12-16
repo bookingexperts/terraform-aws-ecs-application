@@ -1,19 +1,19 @@
 locals {
   cloudfront_defaults = {
-    fallback_host =  null
+    fallback_host       = null
     private_media_paths = []
     public_media_paths  = []
     aliases             = []
   }
-  cloudfront = merge(local.cloudfront_defaults, var.cloudfront)
+  cloudfront      = merge(local.cloudfront_defaults, var.cloudfront)
   cloudfront_host = regex("^(.+?)[.]?$", "cdn.${local.subdomain}.${var.route53_zones.external.name}")[0]
 }
 
 resource "aws_acm_certificate" "cdn" {
-  provider          = "aws.cdn"
-  domain_name       = local.cdn_host
+  provider                  = aws.cdn
+  domain_name               = local.cdn_host
   subject_alternative_names = local.cloudfront.aliases
-  validation_method = "DNS"
+  validation_method         = "DNS"
 
   lifecycle {
     create_before_destroy = true

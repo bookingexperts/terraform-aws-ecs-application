@@ -25,9 +25,9 @@ resource "aws_route53_record" "wildcard" {
 
 resource "aws_route53_record" "cdn" {
   for_each = toset(concat([local.cloudfront_host], local.cloudfront.aliases))
-  zone_id = var.route53_zones.external.zone_id
-  name    = each.value
-  type    = "A"
+  zone_id  = var.route53_zones.external.zone_id
+  name     = each.value
+  type     = "A"
 
   alias {
     evaluate_target_health = true
