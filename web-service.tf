@@ -43,7 +43,7 @@ resource "aws_ecs_service" "web" {
     security_groups = [aws_security_group.web.id]
   }
 
-  depends_on = ["aws_security_group.web"]
+  depends_on = [aws_security_group.web]
 }
 
 resource "aws_lb_target_group" "web" {

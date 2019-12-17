@@ -58,7 +58,7 @@ resource "aws_db_instance" "db" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes        = ["snapshot_identifier"]
+    ignore_changes        = [snapshot_identifier]
   }
 
   tags = {

@@ -7,22 +7,9 @@ resource "aws_lb_listener_rule" "wildcard" {
   }
 
   condition {
-    field  = "host-header"
-    values = [local.wildcard]
-  }
-}
-
-resource "aws_lb_listener_rule" "hostname" {
-  listener_arn = var.load_balancers.listener.arn
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.web.arn
-  }
-
-  condition {
-    field  = "host-header"
-    values = [local.hostname]
+    host_header {
+      values = [local.hostname, local.wildcard]
+    }
   }
 }
 

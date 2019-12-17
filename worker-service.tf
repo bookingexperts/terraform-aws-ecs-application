@@ -37,7 +37,7 @@ resource "aws_ecs_service" "worker" {
     security_groups = [aws_security_group.default.id]
   }
 
-  depends_on = ["aws_security_group.default"]
+  depends_on = [aws_security_group.default]
 }
 
 resource "aws_security_group" "default" {
