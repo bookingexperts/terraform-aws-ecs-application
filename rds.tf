@@ -6,7 +6,7 @@ locals {
     db_snapshot_identifier              = null
     identifier_prefix                   = "${local.name}-"
     engine                              = "postgres"
-    engine_version                      = "10.6"
+    engine_version                      = "10.10"
     instance_class                      = "db.t3.medium"
     multi_az                            = false
     backup_retention_period             = 0
