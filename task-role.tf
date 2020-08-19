@@ -24,6 +24,11 @@ resource "aws_iam_role_policy_attachment" "s3" {
   policy_arn = aws_iam_policy.s3.arn
 }
 
+resource "aws_iam_role_policy_attachment" "cloudwatch" {
+  role       = aws_iam_role.task-role.name
+  policy_arn = aws_iam_policy.cloudwatch.arn
+}
+
 resource "aws_iam_policy" "s3" {
   name = "${local.name}-s3-access"
 
@@ -50,6 +55,29 @@ resource "aws_iam_policy" "s3" {
             "s3:PutObjectAcl"
           ],
           "Resource": ["arn:aws:s3:::${local.s3.bucket_name}/*"]
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_policy" "cloudwatch" {
+  name = "${local.name}-cloudwatch-logging-access"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+                "logs:CreateLogGroup"
+            ],
+            "Resource": "arn:aws:logs:*:*:*"
         }
     ]
 }

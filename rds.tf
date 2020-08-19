@@ -17,6 +17,7 @@ locals {
     username                            = ""
     password                            = ""
     allocated_storage                   = null
+    storage_encrypted                   = false
   }
   rds                    = merge(local.rds_defaults, var.rds)
   rds_create_db_instance = length(coalesce(local.rds.db_instance_prefix, local.rds.db_instance_identifier, "x")) < 2
@@ -55,6 +56,7 @@ resource "aws_db_instance" "db" {
   password                            = local.rds.password
   username                            = local.rds.username
   allocated_storage                   = local.rds.allocated_storage
+  storage_encrypted                   = local.rds.storage_encrypted
 
   lifecycle {
     create_before_destroy = true
