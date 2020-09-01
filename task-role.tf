@@ -75,7 +75,9 @@ resource "aws_iam_policy" "cloudwatch" {
                 "logs:DescribeLogGroups",
                 "logs:DescribeLogStreams",
                 "logs:PutLogEvents",
-                "logs:CreateLogGroup"
+                "logs:CreateLogGroup",
+                "logs:DeleteRetentionPolicy",
+                "logs:PutRetentionPolicy"
             ],
             "Resource": "arn:aws:logs:*:*:*"
         }
