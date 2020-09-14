@@ -69,7 +69,7 @@ locals {
     local.base_container_definition,
     {
       name              = local.container_names.worker
-      command           = ["sidekiq", "-C", "config/sidekiq.yml"]
+      command           = ["sidekiq", "-C", "config/sidekiq.yml", "-c", "4"]
       cpu               = var.worker.cpu
       memory            = var.worker.memory
       memoryReservation = var.worker.memory / 2

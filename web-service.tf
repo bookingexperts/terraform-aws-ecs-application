@@ -32,6 +32,10 @@ resource "aws_ecs_service" "web" {
     field = "instanceId"
   }
 
+  placement_constraints {
+    type = "distinctInstance"
+  }
+
   load_balancer {
     target_group_arn = aws_lb_target_group.web.arn
     container_name   = local.container_names.web
