@@ -3,6 +3,7 @@ locals {
     fallback_host       = null
     private_media_paths = []
     public_media_paths  = []
+    custom_asset_paths  = []
     aliases             = []
   }
   cloudfront      = merge(local.cloudfront_defaults, var.cloudfront)
@@ -173,7 +174,7 @@ resource "aws_cloudfront_distribution" "cdn" {
 
   # Cache assets
   dynamic "ordered_cache_behavior" {
-    for_each = ["/assets/*", "/packs/*"]
+    for_each = concat(["/assets/*", "/packs/*"], local.cloudfront.custom_asset_paths)
     iterator = path
 
     content {
