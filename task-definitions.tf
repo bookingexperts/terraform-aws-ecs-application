@@ -1,6 +1,7 @@
 locals {
   env_vars = merge(
     {
+      "ECS_ENV"          = var.env
       "ASSET_HOST"       = local.cloudfront_host
       "MEDIA_ASSET_HOST" = local.cloudfront_host
       "HOST"             = local.hostname
