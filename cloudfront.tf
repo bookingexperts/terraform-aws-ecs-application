@@ -97,7 +97,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   }
 
   origin {
-    domain_name = aws_s3_bucket.media.bucket_domain_name
+    domain_name = aws_s3_bucket.media.bucket_regional_domain_name
     origin_id   = "media"
 
     s3_origin_config {

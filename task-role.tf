@@ -71,12 +71,13 @@ resource "aws_iam_policy" "cloudwatch" {
         {
             "Effect": "Allow",
             "Action": [
+                "logs:CreateLogGroup",
                 "logs:CreateLogStream",
+                "logs:DeleteRetentionPolicy",
                 "logs:DescribeLogGroups",
                 "logs:DescribeLogStreams",
+                "logs:FilterLogEvents",
                 "logs:PutLogEvents",
-                "logs:CreateLogGroup",
-                "logs:DeleteRetentionPolicy",
                 "logs:PutRetentionPolicy"
             ],
             "Resource": "arn:aws:logs:*:*:*"
