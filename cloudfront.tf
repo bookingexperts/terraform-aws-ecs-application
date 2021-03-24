@@ -5,6 +5,7 @@ locals {
     public_media_paths  = []
     custom_asset_paths  = []
     aliases             = []
+    forward_query       = false
   }
   cloudfront      = merge(local.cloudfront_defaults, var.cloudfront)
   cloudfront_host = regex("^(.+?)[.]?$", "cdn.${local.subdomain}.${var.route53_zones.external.name}")[0]
@@ -22,13 +23,19 @@ resource "aws_acm_certificate" "cdn" {
 }
 
 resource "aws_route53_record" "cdn-validation" {
-  count = length(local.cloudfront.aliases) + 1
-
-  name    = aws_acm_certificate.cdn.domain_validation_options[count.index].resource_record_name
-  type    = aws_acm_certificate.cdn.domain_validation_options[count.index].resource_record_type
-  records = [aws_acm_certificate.cdn.domain_validation_options[count.index].resource_record_value]
-  zone_id = var.route53_zones.external.zone_id
-  ttl     = 60
+  for_each = {
+    for dvo in aws_acm_certificate.cdn.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      type   = dvo.resource_record_type
+      record = dvo.resource_record_value
+    }
+  }
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  type            = each.value.type
+  zone_id         = var.route53_zones.external.zone_id
+  ttl             = 60
 
 
   lifecycle {
@@ -39,7 +46,7 @@ resource "aws_route53_record" "cdn-validation" {
 resource "aws_acm_certificate_validation" "cdn" {
   provider                = aws.cdn
   certificate_arn         = aws_acm_certificate.cdn.arn
-  validation_record_fqdns = aws_route53_record.cdn-validation.*.fqdn
+  validation_record_fqdns = [for record in aws_route53_record.cdn-validation : record.fqdn]
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
@@ -140,7 +147,7 @@ resource "aws_cloudfront_distribution" "cdn" {
       trusted_signers        = ["self"]
 
       forwarded_values {
-        query_string = true
+        query_string = local.cloudfront.forward_query
 
         cookies {
           forward = "none"
@@ -163,7 +170,7 @@ resource "aws_cloudfront_distribution" "cdn" {
       viewer_protocol_policy = "redirect-to-https"
 
       forwarded_values {
-        query_string = true
+        query_string = local.cloudfront.forward_query
 
         cookies {
           forward = "none"
@@ -186,7 +193,7 @@ resource "aws_cloudfront_distribution" "cdn" {
       viewer_protocol_policy = "redirect-to-https"
 
       forwarded_values {
-        query_string = true
+        query_string = local.cloudfront.forward_query
 
         cookies {
           forward = "none"
@@ -205,7 +212,7 @@ resource "aws_cloudfront_distribution" "cdn" {
     trusted_signers        = ["self"]
 
     forwarded_values {
-      query_string = true
+      query_string = local.cloudfront.forward_query
 
       cookies {
         forward = "none"

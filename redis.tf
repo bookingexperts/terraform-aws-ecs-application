@@ -28,6 +28,7 @@ resource "aws_elasticache_replication_group" "redis" {
   automatic_failover_enabled = local.redis.nodes > 1
   at_rest_encryption_enabled = true
   transit_encryption_enabled = false # Not supported by hiredis driver
+  multi_az_enabled           = local.redis.nodes > 1
 
   tags = {
     workload-type = var.workload_type

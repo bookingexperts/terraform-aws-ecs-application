@@ -53,8 +53,11 @@ locals {
       cpu               = var.web.cpu
       memory            = var.web.memory
       memoryReservation = var.web.memory / 2
+      volumesFrom       = []
       portMappings = [{
         containerPort = 8080
+        hostPort      = 8080
+        protocol      = "tcp"
       }]
       logConfiguration = {
         logDriver = "awslogs"

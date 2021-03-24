@@ -22,14 +22,24 @@ resource "aws_ecs_service" "worker" {
   deployment_minimum_healthy_percent = var.worker.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.worker.deployment_maximum_percent
 
+  capacity_provider_strategy {
+    base              = 0
+    capacity_provider = "instances"
+    weight            = 1
+  }
+
+  deployment_controller {
+    type = "ECS"
+  }
+
   ordered_placement_strategy {
     type  = "spread"
     field = "attribute:ecs.availability-zone"
   }
 
   ordered_placement_strategy {
-    type  = "spread"
-    field = "instanceId"
+    type  = "binpack"
+    field = "cpu"
   }
 
   network_configuration {

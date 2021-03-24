@@ -73,7 +73,7 @@ variable "load_balancers" {
 data "aws_region" "current" {}
 locals {
   name            = "${var.name}-${var.env}"
-  tld             = substr(var.route53_zones.external.name, 0, length(var.route53_zones.external.name) - 1)
+  tld             = substr(var.route53_zones.external.name, 0, length(var.route53_zones.external.name))
   subdomain       = coalesce(var.subdomain, var.env)
   hostname        = "${local.subdomain}.${local.tld}"
   wildcard        = "*.${local.hostname}"

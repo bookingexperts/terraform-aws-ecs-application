@@ -1,8 +1,9 @@
 resource "aws_ecs_task_definition" "web" {
-  family                = "${var.name}-${local.container_names.web}-${var.env}"
-  container_definitions = jsonencode([local.web_container_definition])
-  task_role_arn         = aws_iam_role.task-role.arn
-  network_mode          = "awsvpc"
+  family                   = "${var.name}-${local.container_names.web}-${var.env}"
+  container_definitions    = jsonencode([local.web_container_definition])
+  task_role_arn            = aws_iam_role.task-role.arn
+  network_mode             = "awsvpc"
+  requires_compatibilities = []
 
   volume {
     host_path = "${var.storage_base_path}/${local.name}"
@@ -22,18 +23,24 @@ resource "aws_ecs_service" "web" {
   deployment_minimum_healthy_percent = var.web.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.web.deployment_maximum_percent
 
+  capacity_provider_strategy {
+    base              = 0
+    capacity_provider = "instances"
+    weight            = 1
+  }
+
+  deployment_controller {
+    type = "ECS"
+  }
+
   ordered_placement_strategy {
     type  = "spread"
     field = "attribute:ecs.availability-zone"
   }
 
   ordered_placement_strategy {
-    type  = "spread"
-    field = "instanceId"
-  }
-
-  placement_constraints {
-    type = "distinctInstance"
+    type  = "binpack"
+    field = "cpu"
   }
 
   load_balancer {

@@ -6,7 +6,7 @@ locals {
     db_snapshot_identifier              = null
     identifier_prefix                   = "${local.name}-"
     engine                              = "postgres"
-    engine_version                      = "10.10"
+    engine_version                      = "10.15"
     instance_class                      = "db.t3.medium"
     multi_az                            = false
     backup_retention_period             = 0
@@ -42,10 +42,10 @@ data "aws_db_snapshot" "latest" {
 resource "aws_db_instance" "db" {
   count = local.rds_create_db_instance ? 1 : 0
 
-  backup_retention_period             = local.rds.backup_retention_period
-  db_subnet_group_name                = local.rds.db_subnet_group_name
-  engine                              = local.rds.engine
-  engine_version                      = local.rds.engine_version
+  backup_retention_period = local.rds.backup_retention_period
+  db_subnet_group_name    = local.rds.db_subnet_group_name
+  engine                  = local.rds.engine
+  # engine_version                      = coalesce(data.aws_db_snapshot.latest.0.engine_version, local.rds.engine_version)
   iam_database_authentication_enabled = local.rds.iam_database_authentication_enabled
   identifier_prefix                   = local.rds.identifier_prefix
   instance_class                      = local.rds.instance_class
