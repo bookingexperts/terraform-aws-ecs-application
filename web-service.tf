@@ -112,3 +112,4 @@ resource "aws_security_group" "web" {
     workload-type = var.workload_type
   }
 }
+

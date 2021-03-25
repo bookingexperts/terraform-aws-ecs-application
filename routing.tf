@@ -42,14 +42,18 @@ locals {
 resource "null_resource" "call-certbot" {
   triggers = {
     hostname = local.hostname
+    cluster = var.ecs_cluster.name
+    add = jsonencode(local.certbot.overrides.add)
+    del = jsonencode(local.certbot.overrides.del)
+    network = jsonencode(local.certbot.network_config)
   }
 
   provisioner "local-exec" {
-    command = "aws ecs run-task --region eu-central-1 --cluster ${var.ecs_cluster.name} --task-definition certbot --started-by \"Terraform\" --overrides '${jsonencode(local.certbot.overrides.add)}' --network-configuration '${jsonencode(local.certbot.network_config)}'"
+    command = "aws ecs run-task --region eu-central-1 --cluster ${self.triggers.cluster} --task-definition certbot --started-by \"Terraform\" --overrides '${self.triggers.add}' --network-configuration '${self.triggers.network}'"
   }
 
   provisioner "local-exec" {
     when    = destroy
-    command = "aws ecs run-task --region eu-central-1 --cluster ${var.ecs_cluster.name} --task-definition certbot --started-by \"Terraform\" --overrides '${jsonencode(local.certbot.overrides.del)}' --network-configuration '${jsonencode(local.certbot.network_config)}'"
+    command = "aws ecs run-task --region eu-central-1 --cluster ${self.triggers.cluster} --task-definition certbot --started-by \"Terraform\" --overrides '${self.triggers.del}' --network-configuration '${self.triggers.network}'"
   }
 }

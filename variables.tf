@@ -1,3 +1,7 @@
+terraform {
+  # experiments = [module_variable_optional_attrs]
+}
+
 # Application settings
 variable "name" { type = string }
 variable "env" { type = string }
@@ -20,6 +24,7 @@ variable "web" {
     deployment_maximum_percent         = number
 
     health_check = map(any)
+    #auto_scaling = optional(map(any))
   })
 }
 
