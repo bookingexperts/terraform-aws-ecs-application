@@ -19,7 +19,7 @@ resource "aws_ecs_service" "web" {
   name                               = "${var.name}-web-${var.env}"
   cluster                            = var.ecs_cluster.arn
   task_definition                    = aws_ecs_task_definition.web.arn
-  desired_count                      = var.web.count
+  desired_count                      = local.auto_scaling.min_web_capacity
   deployment_minimum_healthy_percent = var.web.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.web.deployment_maximum_percent
 
@@ -55,6 +55,10 @@ resource "aws_ecs_service" "web" {
   }
 
   depends_on = [aws_security_group.web]
+
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
 }
 
 resource "aws_lb_target_group" "web" {
@@ -113,3 +117,43 @@ resource "aws_security_group" "web" {
   }
 }
 
+resource "aws_appautoscaling_target" "web" {
+  count = var.web.auto_scaling != null ? 1 : 0
+
+  max_capacity       = var.web.auto_scaling.max_capacity
+  min_capacity       = var.web.auto_scaling.min_capacity
+  resource_id        = "service/${var.ecs_cluster.name}/${aws_ecs_service.web.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "web" {
+  count = var.web.auto_scaling != null ? 1 : 0
+
+  name               = "Track CPU@${var.web.auto_scaling.target_value}%"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.web[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.web[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.web[0].service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+
+    target_value = var.web.auto_scaling.target_value
+  }
+}
+
+# resource "aws_appautoscaling_scheduled_action" "min-capacity-web" {
+#   for_each = var.web.auto_scaling.min_capacity_schedule
+# 
+#   name               = "Set minimum capacity to ${each.value} at ${each.key}"
+#   resource_id        = aws_appautoscaling_target.web[0].resource_id
+#   scalable_dimension = aws_appautoscaling_target.web[0].scalable_dimension
+#   service_namespace  = aws_appautoscaling_target.web[0].service_namespace
+# 
+#   scalable_target_action {
+#     min_capacity = each.value
+#    }
+# }

@@ -1,5 +1,5 @@
 terraform {
-  # experiments = [module_variable_optional_attrs]
+  experiments = [module_variable_optional_attrs]
 }
 
 # Application settings
@@ -17,14 +17,14 @@ variable "web" {
   type = object({
     cpu                  = number
     memory               = number
-    count                = number
+    count                = optional(number)
     deregistration_delay = number
 
     deployment_minimum_healthy_percent = number
     deployment_maximum_percent         = number
 
     health_check = map(any)
-    #auto_scaling = optional(map(any))
+    auto_scaling = optional(map(any))
   })
 }
 
@@ -32,10 +32,12 @@ variable "worker" {
   type = object({
     cpu    = number
     memory = number
-    count  = number
+    count  = optional(number)
 
     deployment_minimum_healthy_percent = number
     deployment_maximum_percent         = number
+
+    auto_scaling = optional(map(any))
   })
 }
 
@@ -84,6 +86,7 @@ locals {
   wildcard        = "*.${local.hostname}"
   cdn_host        = "cdn.${local.hostname}"
   container_names = var.legacy_container_names ? { web = "puma", worker = "sidekiq", console = "deploy" } : { web = "web", worker = "worker", console = "console" }
+  auto_scaling    = merge(var.web.auto_scaling, { min_web_capacity = coalesce(var.web.count, 1),  min_worker_capacity = coalesce(var.worker.count, 1) })
 }
 
 provider "aws" {}

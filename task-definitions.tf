@@ -62,7 +62,7 @@ locals {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = "${local.name}"
+          awslogs-group         = local.name
           awslogs-region        = data.aws_region.current.name
           awslogs-stream-prefix = "web"
         }
@@ -81,7 +81,7 @@ locals {
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          awslogs-group         = "${local.name}"
+          awslogs-group         = local.name
           awslogs-region        = data.aws_region.current.name
           awslogs-stream-prefix = "worker"
         }

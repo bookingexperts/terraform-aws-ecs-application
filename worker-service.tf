@@ -18,7 +18,7 @@ resource "aws_ecs_service" "worker" {
   name                               = "${var.name}-worker-${var.env}"
   cluster                            = var.ecs_cluster.arn
   task_definition                    = aws_ecs_task_definition.worker.arn
-  desired_count                      = var.worker.count
+  desired_count                      = local.auto_scaling.min_worker_capacity
   deployment_minimum_healthy_percent = var.worker.deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.worker.deployment_maximum_percent
 
@@ -47,6 +47,10 @@ resource "aws_ecs_service" "worker" {
     security_groups = [aws_security_group.default.id]
   }
 
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
+
   depends_on = [aws_security_group.default]
 }
 
@@ -71,3 +75,44 @@ resource "aws_security_group" "default" {
   }
 }
 
+resource "aws_appautoscaling_target" "worker" {
+  count = var.worker.auto_scaling != null ? 1 : 0
+
+  max_capacity       = var.worker.auto_scaling.max_capacity
+  min_capacity       = var.worker.auto_scaling.min_capacity
+  resource_id        = "service/${var.ecs_cluster.name}/${aws_ecs_service.worker.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "worker" {
+  count = var.worker.auto_scaling != null ? 1 : 0
+
+  name               = "Track CPU@${var.worker.auto_scaling.target_value}%"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.worker[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.worker[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.worker[0].service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+
+    target_value = var.worker.auto_scaling.target_value
+  }
+}
+
+# resource "aws_appautoscaling_scheduled_action" "min-capacity-worker" {
+#   for_each = var.worker.auto_scaling.min_capacity_schedule
+# 
+#   name               = "Set minimum capacity to ${each.value} at ${each.name}"
+#   resource_id        = aws_appautoscaling_target.worker[0].resource_id
+#   scalable_dimension = aws_appautoscaling_target.worker[0].scalable_dimension
+#   service_namespace  = aws_appautoscaling_target.worker[0].service_namespace
+# 
+#   scalable_target_action {
+#     min_capacity = each.value
+#    }
+# }
+# 
