@@ -50,6 +50,7 @@ variable "s3" {
 }
 
 variable "redis" {
+  type = map(map(any))
   default = {}
 }
 

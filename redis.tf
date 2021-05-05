@@ -5,30 +5,37 @@ locals {
     parameter_group_name = "default.redis5.0"
     engine_version       = "5.0.4"
   }
-  redis = merge(local.redis_defaults, var.redis)
 }
 
-resource "random_id" "redis" {
-  byte_length = 4
+resource "random_string" "redis" {
+  for_each = var.redis
+  length   = 6
+  special  = false
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_elasticache_replication_group" "redis" {
-  replication_group_id          = "${regex("^.{0,12}[^-]?", local.name)}-${regex("^[^-]?.*", random_id.redis.id)}"
-  replication_group_description = "${local.name} cache cluster"
+  for_each = {for k, v in var.redis : k => merge(local.redis_defaults, v)}
+
+  replication_group_id          = "${regex("^.{0,12}[^-]?", local.name)}-${regex("^[^-]?.*", random_string.redis[each.key].id)}"
+  replication_group_description = "${local.name} ${each.key} cluster"
   engine                        = "redis"
   port                          = 6379
   security_group_ids            = [aws_security_group.redis.id]
   subnet_group_name             = "main"
   snapshot_retention_limit      = 0
 
-  node_type                  = local.redis.node_type
-  number_cache_clusters      = local.redis.nodes
-  parameter_group_name       = local.redis.parameter_group_name
-  engine_version             = local.redis.engine_version
-  automatic_failover_enabled = local.redis.nodes > 1
+  node_type                  = each.value.node_type
+  number_cache_clusters      = each.value.nodes
+  parameter_group_name       = each.value.parameter_group_name
+  engine_version             = each.value.engine_version
+  automatic_failover_enabled = each.value.nodes > 1
   at_rest_encryption_enabled = true
   transit_encryption_enabled = false # Not supported by hiredis driver
-  multi_az_enabled           = local.redis.nodes > 1
+  multi_az_enabled           = each.value.nodes > 1
 
   tags = {
     workload-type = var.workload_type
@@ -68,9 +75,11 @@ resource "aws_security_group" "redis" {
 }
 
 resource "aws_route53_record" "redis" {
+  for_each = var.redis
+
   zone_id = var.route53_zones.internal.zone_id
-  name    = "cache.${local.name}.be.internal"
+  name    = "${each.key}.${local.name}.be.internal"
   type    = "CNAME"
   ttl     = 60
-  records = [aws_elasticache_replication_group.redis.primary_endpoint_address]
+  records = [aws_elasticache_replication_group.redis[each.key].primary_endpoint_address]
 }

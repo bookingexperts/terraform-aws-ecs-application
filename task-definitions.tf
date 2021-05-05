@@ -7,7 +7,7 @@ locals {
       "HOST"             = local.hostname
       "LOG_NAME"         = local.name
       "AWS_REGION"       = data.aws_region.current.name
-      "REDIS_URL"        = "redis://${aws_route53_record.redis.fqdn}:6379"
+      "REDIS_URL"        = length(aws_route53_record.redis) > 0 ? "redis://${values(aws_route53_record.redis)[0].fqdn}:6379" : "-"
       "S3_DIRECTORY"     = aws_s3_bucket.media.bucket
       "RDS_HOSTNAME"     = local.rds_cname
       "RDS_DB_NAME"      = data.aws_db_instance.db.db_name
@@ -15,6 +15,7 @@ locals {
       "RDS_USERNAME"     = data.aws_db_instance.db.master_username
       "RDS_PASSWORD"     = local.rds.password
     },
+    { for k, _ in var.redis : "REDIS_${upper(k)}_URL" => aws_route53_record.redis[k].fqdn },
     var.environment
   )
 
