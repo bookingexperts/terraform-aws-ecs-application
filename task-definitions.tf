@@ -15,7 +15,7 @@ locals {
       "RDS_USERNAME"     = data.aws_db_instance.db.master_username
       "RDS_PASSWORD"     = local.rds.password
     },
-    { for k, _ in var.redis : "REDIS_${upper(k)}_URL" => aws_route53_record.redis[k].fqdn },
+    { for k, _ in var.redis : "REDIS_${upper(k)}_URL" => "redis://${aws_route53_record.redis[k].fqdn}:6379" },
     var.environment
   )
 
