@@ -86,7 +86,7 @@ locals {
   hostname        = "${local.subdomain}.${local.tld}"
   wildcard        = "*.${local.hostname}"
   cdn_host        = "cdn.${local.hostname}"
-  container_names = var.legacy_container_names ? { web = "puma", worker = "sidekiq", console = "deploy" } : { web = "web", worker = "worker", console = "console" }
+  container_names = var.legacy_container_names ? { web = "puma", worker = "sidekiq", console = "deploy" } : { web = "web", worker = "worker", console = "deploy" }
   auto_scaling    = merge(var.web.auto_scaling, { min_web_capacity = coalesce(var.web.count, 1),  min_worker_capacity = coalesce(var.worker.count, 1) })
 }
 
