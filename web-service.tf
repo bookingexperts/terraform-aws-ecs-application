@@ -54,6 +54,13 @@ resource "aws_ecs_service" "web" {
     security_groups = [aws_security_group.web.id]
   }
 
+  dynamic "service_registries" {
+    for_each = aws_service_discovery_service.web
+    content {
+      registry_arn = service_registry.value["arn"]
+    }
+  }
+
   depends_on = [aws_security_group.web]
 
   lifecycle {
@@ -86,6 +93,29 @@ resource "aws_lb_target_group" "web" {
 
   tags = {
     workload-type = var.workload_type
+  }
+}
+
+resource "aws_service_discovery_service" "web" {
+  count = var.enable_service_discovery ? 1 : 0
+  name = "${var.name}-web-${var.env}"
+
+  dns_config {
+    namespace_id = var.service_discovery_namespace.id
+
+    dns_records {
+      ttl  = 10
+      type = "SRV"
+    }
+
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+  }
+
+  health_check_custom_config {
+    failure_threshold = 2
   }
 }
 
@@ -144,16 +174,3 @@ resource "aws_appautoscaling_policy" "web" {
     target_value = var.web.auto_scaling.target_value
   }
 }
-
-# resource "aws_appautoscaling_scheduled_action" "min-capacity-web" {
-#   for_each = var.web.auto_scaling.min_capacity_schedule
-# 
-#   name               = "Set minimum capacity to ${each.value} at ${each.key}"
-#   resource_id        = aws_appautoscaling_target.web[0].resource_id
-#   scalable_dimension = aws_appautoscaling_target.web[0].scalable_dimension
-#   service_namespace  = aws_appautoscaling_target.web[0].service_namespace
-# 
-#   scalable_target_action {
-#     min_capacity = each.value
-#    }
-# }

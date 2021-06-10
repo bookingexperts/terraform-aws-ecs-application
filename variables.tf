@@ -11,6 +11,7 @@ variable "log_retention" { default = 30 }
 variable "legacy_container_names" { default = false }
 variable "storage_base_path" { default = "/mnt/efs" }
 variable "workload_type" { default = "testing" }
+variable "enable_service_discovery" { default =  false }
 
 # Task specific settings
 variable "web" {
@@ -50,7 +51,7 @@ variable "s3" {
 }
 
 variable "redis" {
-  type = map(map(any))
+  type    = map(map(any))
   default = {}
 }
 
@@ -63,6 +64,7 @@ variable "ecs_cluster" { type = object({ arn = string, name = string }) }
 variable "vpc" { type = object({ id = string }) }
 variable "ses_iam_policy" { type = object({ arn = string }) }
 variable "ecr_repository" { type = object({ repository_url = string }) }
+variable "service_discovery_namespace" { type = object({ id = string, name = string }) }
 variable "route53_zones" {
   type = object({
     internal = object({ zone_id = string, name = string })
@@ -87,7 +89,7 @@ locals {
   wildcard        = "*.${local.hostname}"
   cdn_host        = "cdn.${local.hostname}"
   container_names = var.legacy_container_names ? { web = "puma", worker = "sidekiq", console = "deploy" } : { web = "web", worker = "worker", console = "deploy" }
-  auto_scaling    = merge(var.web.auto_scaling, { min_web_capacity = coalesce(var.web.count, 1),  min_worker_capacity = coalesce(var.worker.count, 1) })
+  auto_scaling    = merge(var.web.auto_scaling, { min_web_capacity = coalesce(var.web.count, 1), min_worker_capacity = coalesce(var.worker.count, 1) })
 }
 
 provider "aws" {}

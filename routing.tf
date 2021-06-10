@@ -42,10 +42,10 @@ locals {
 resource "null_resource" "call-certbot" {
   triggers = {
     hostname = local.hostname
-    cluster = var.ecs_cluster.name
-    add = jsonencode(local.certbot.overrides.add)
-    del = jsonencode(local.certbot.overrides.del)
-    network = jsonencode(local.certbot.network_config)
+    cluster  = var.ecs_cluster.name
+    add      = jsonencode(local.certbot.overrides.add)
+    del      = jsonencode(local.certbot.overrides.del)
+    network  = jsonencode(local.certbot.network_config)
   }
 
   provisioner "local-exec" {

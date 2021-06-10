@@ -18,7 +18,7 @@ resource "random_string" "redis" {
 }
 
 resource "aws_elasticache_replication_group" "redis" {
-  for_each = {for k, v in var.redis : k => merge(local.redis_defaults, v)}
+  for_each = { for k, v in var.redis : k => merge(local.redis_defaults, v) }
 
   replication_group_id          = "${regex("^.{0,12}[^-]?", local.name)}-${regex("^[^-]?.*", random_string.redis[each.key].id)}"
   replication_group_description = "${local.name} ${each.key} cluster"
