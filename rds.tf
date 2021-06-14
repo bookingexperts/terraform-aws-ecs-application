@@ -4,7 +4,7 @@ locals {
     db_instance_prefix                  = null
     source_db_instance_identifier       = null
     db_snapshot_identifier              = null
-    identifier_prefix                   = "${local.name}-"
+    identifier_prefix                   = "${substr(local.name, 0, 33)}-"
     engine                              = "postgres"
     engine_version                      = "10.15"
     instance_class                      = "db.t3.medium"
