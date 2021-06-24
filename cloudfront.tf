@@ -5,6 +5,7 @@ locals {
     public_media_paths  = []
     custom_asset_paths  = []
     aliases             = []
+    external_aliases    = []
     forward_query       = false
   }
   cloudfront      = merge(local.cloudfront_defaults, var.cloudfront)
@@ -14,7 +15,7 @@ locals {
 resource "aws_acm_certificate" "cdn" {
   provider                  = aws.cdn
   domain_name               = local.cdn_host
-  subject_alternative_names = local.cloudfront.aliases
+  subject_alternative_names = concat(local.cloudfront.aliases, local.cloudfront.external_aliases)
   validation_method         = "DNS"
 
   lifecycle {
