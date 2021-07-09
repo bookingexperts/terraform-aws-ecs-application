@@ -67,7 +67,7 @@ resource "aws_cloudfront_distribution" "cdn" {
   enabled         = true
   is_ipv6_enabled = true
   comment         = "Managed by Terraform"
-  aliases         = concat([local.cdn_host], local.cloudfront.aliases)
+  aliases         = concat([local.cdn_host], local.cloudfront.aliases, local.cloudfront.external_aliases)
 
   viewer_certificate {
     acm_certificate_arn      = aws_acm_certificate.cdn.arn
