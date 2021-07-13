@@ -88,18 +88,33 @@ resource "aws_appautoscaling_target" "worker" {
 resource "aws_appautoscaling_policy" "worker" {
   count = var.worker.auto_scaling != null ? 1 : 0
 
-  name               = "Track CPU@${var.worker.auto_scaling.target_value}%"
+  name               = "Track CPU@${var.worker.auto_scaling.target_value}% (${coalesce(var.worker.auto_scaling.statistic, "Average")})"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.worker[0].resource_id
   scalable_dimension = aws_appautoscaling_target.worker[0].scalable_dimension
   service_namespace  = aws_appautoscaling_target.worker[0].service_namespace
 
   target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    customized_metric_specification {
+      metric_name = "CPUUtilization"
+      namespace   = "AWS/ECS"
+      statistic   = coalesce(var.worker.auto_scaling.statistic, "Average")
+      unit        = "Percent"
+
+      dimensions {
+        name  = "ClusterName"
+        value = var.ecs_cluster.name
+      }
+
+      dimensions {
+        name  = "ServiceName"
+        value = aws_ecs_service.worker.name
+      }
     }
 
     target_value = var.worker.auto_scaling.target_value
+    scale_in_cooldown  = var.worker.auto_scaling.scale_in_cooldown
+    scale_out_cooldown = var.worker.auto_scaling.scale_out_cooldown
   }
 }
 

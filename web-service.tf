@@ -172,5 +172,7 @@ resource "aws_appautoscaling_policy" "web" {
     }
 
     target_value = var.web.auto_scaling.target_value
+    scale_in_cooldown  = 120
+    scale_out_cooldown = 120
   }
 }
